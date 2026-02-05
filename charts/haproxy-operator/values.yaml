@@ -1,0 +1,310 @@
+# Default values for haproxy-operator
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Number of operator replicas (use 3+ for HA with leader election)
+replicaCount: 1
+
+image:
+  # -- Container image registry
+  registry: docker.io
+  # -- Container image repository
+  repository: yourorg/haproxy-operator
+  # -- Container image pull policy
+  pullPolicy: IfNotPresent
+  # -- Container image tag (defaults to chart appVersion if not set)
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+
+# -- Override the full release name
+fullnameOverride: ""
+
+# Operator configuration
+operator:
+  # -- Namespace to watch for Secrets (empty = all namespaces)
+  watchNamespace: ""
+
+  # -- Key in Secret containing HAProxy configuration
+  secretKey: "config.yaml"
+
+  # -- Enable leader election (required for HA)
+  leaderElection: true
+
+  # -- Log level (debug, info, error)
+  logLevel: info
+
+  # -- Enable development mode logging
+  logDevelopment: false
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+
+  # -- Automatically mount service account token
+  automount: true
+
+  # -- Annotations to add to the service account
+  annotations: {}
+
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# RBAC configuration
+rbac:
+  # -- Create RBAC resources (ClusterRole, ClusterRoleBinding)
+  create: true
+
+  # -- Use cluster-wide RBAC (ClusterRole) vs namespaced (Role)
+  clusterWide: true
+
+# Pod annotations
+podAnnotations: {}
+  # prometheus.io/scrape: "true"
+  # prometheus.io/port: "8080"
+  # prometheus.io/path: "/metrics"
+
+# Pod labels
+podLabels: {}
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+# Service for metrics endpoint
+service:
+  # -- Service type
+  type: ClusterIP
+
+  # -- Metrics port
+  metricsPort: 8080
+
+  # -- Annotations to add to the service
+  annotations: {}
+
+# Service monitor for Prometheus operator
+serviceMonitor:
+  # -- Create ServiceMonitor resource
+  enabled: false
+
+  # -- Scrape interval
+  interval: 30s
+
+  # -- Scrape timeout
+  scrapeTimeout: 10s
+
+  # -- Additional labels for ServiceMonitor
+  additionalLabels: {}
+
+  # -- Namespace to deploy ServiceMonitor (defaults to release namespace)
+  namespace: ""
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Autoscaling (not recommended with leader election)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Pod topology spread constraints
+topologySpreadConstraints: []
+
+# Priority class name
+priorityClassName: ""
+
+# Termination grace period
+terminationGracePeriodSeconds: 10
+
+# Extra environment variables
+extraEnv: []
+  # - name: CUSTOM_VAR
+  #   value: "custom-value"
+
+# Extra environment variables from ConfigMaps or Secrets
+extraEnvFrom: []
+  # - configMapRef:
+  #     name: extra-config
+  # - secretRef:
+  #     name: extra-secrets
+
+# Extra volumes
+extraVolumes: []
+  # - name: custom-volume
+  #   configMap:
+  #     name: custom-config
+
+# Extra volume mounts
+extraVolumeMounts: []
+  # - name: custom-volume
+  #   mountPath: /etc/custom
+  #   readOnly: true
+
+# Extra init containers
+initContainers: []
+
+# Extra sidecar containers
+sidecars: []
+
+# Network policy
+networkPolicy:
+  # -- Enable network policy
+  enabled: false
+
+  # -- Egress rules for HAProxy API access
+  egress:
+    # -- Allow access to HAProxy Dataplane API
+    - to:
+        # -- HAProxy server IP (adjust to your environment)
+        - ipBlock:
+            cidr: 192.168.2.2/32
+      ports:
+        # -- Dataplane API port
+        - protocol: TCP
+          port: 5555
+
+    # -- Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # -- Allow Kubernetes API access
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+# Pod disruption budget
+podDisruptionBudget:
+  # -- Enable pod disruption budget
+  enabled: false
+
+  # -- Minimum available pods
+  minAvailable: 1
+
+  # -- Maximum unavailable pods (alternative to minAvailable)
+  # maxUnavailable: 1
+
+# Metrics configuration
+metrics:
+  # -- Enable metrics endpoint
+  enabled: true
+
+  # -- Metrics bind address
+  bindAddress: ":8080"
+
+# Health probe configuration
+healthProbe:
+  # -- Health probe bind address
+  bindAddress: ":8081"
+
+# Extra arguments to pass to the operator
+extraArgs: []
+  # - --zap-log-level=debug
+  # - --namespace=production
+
+# Configuration for sample Secret (for testing)
+sampleConfig:
+  # -- Install sample Secret
+  enabled: false
+
+  # -- Sample Secret name
+  name: haproxy-config
+
+  # -- Sample Secret name for API credentials
+  secretName: haproxy-api-credentials
+
+  # -- HAProxy Dataplane API URL
+  apiUrl: "http://haproxy-server.example.com:5555/v2"
+
+  # -- API username
+  apiUsername: "admin"
+
+  # -- API password
+  apiPassword: "changeme"
+
+  # -- Sample backend configuration
+  backends:
+    - name: sample-backend
+      mode: http
+      balance:
+        algorithm: roundrobin
+      servers:
+        - name: server-01
+          address: 10.0.1.10
+          port: 443
+          ssl: true
+          check: true
+          verify: none
+
+  # -- Sample frontend configuration
+  frontends:
+    - name: sample-frontend
+      mode: http
+      binds:
+        - name: http
+          address: "*"
+          port: 80
+      defaultBackend: sample-backend

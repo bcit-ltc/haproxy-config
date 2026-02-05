@@ -1,0 +1,21 @@
+apiVersion: v2
+name: haproxy-operator
+description: A Kubernetes operator that manages HAProxy configuration via Dataplane API
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/example/haproxy-operator
+sources:
+  - https://github.com/example/haproxy-operator
+keywords:
+  - haproxy
+  - load-balancer
+  - operator
+  - gitops
+maintainers:
+  - name: HAProxy Operator Team
+    email: team@example.com
+icon: https://www.haproxy.org/img/HAProxyCommunityEdition_60px.png
+annotations:
+  category: Infrastructure
+  licenses: Apache-2.0

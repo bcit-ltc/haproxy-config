@@ -1,0 +1,82 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+manager
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+cover.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-*
+
+# Kubernetes generated files
+*.yaml.bak
+*.yaml.orig
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Build artifacts
+dist/
+build/
+release/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.envrc
+
+# Kubernetes secrets (never commit!)
+*secret*.yaml
+!*secret*.yaml.example
+credentials.yaml
+
+# Production configurations (keep private!)
+production-*.yaml
+config/private/
+private-config/
+haproxy.cfg
+
+# Organization-specific configs
+*-prod-*.yaml
+
+# Backup files
+*.bak
+*.backup
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Documentation build files
+docs/_build/
+docs/.doctrees/
+
+# Coverage reports
+coverage.html
+coverage.xml

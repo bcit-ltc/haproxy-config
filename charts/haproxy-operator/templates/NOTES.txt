@@ -1,0 +1,146 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+The HAProxy Operator has been deployed successfully!
+
+{{- if .Values.operator.watchNamespace }}
+
+The operator is watching Secrets in namespace: {{ .Values.operator.watchNamespace }}
+{{- else }}
+
+The operator is watching Secrets across all namespaces.
+{{- end }}
+
+NEXT STEPS:
+
+1. Verify the operator is running:
+
+   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "haproxy-operator.name" . }}
+
+2. Check operator logs:
+
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "haproxy-operator.name" . }} -f
+
+{{- if not .Values.sampleConfig.enabled }}
+
+3. Create API credentials Secret:
+
+   kubectl create secret generic haproxy-api-credentials \
+     --from-literal=username=admin \
+     --from-literal=password=your-secure-password \
+     {{- if .Values.operator.watchNamespace }}
+     -n {{ .Values.operator.watchNamespace }}
+     {{- else }}
+     -n default
+     {{- end }}
+
+4. Create HAProxy configuration Secret:
+
+   kubectl create secret generic haproxy-config \
+     --from-file=config.yaml=./your-config.yaml \
+     {{- if .Values.operator.watchNamespace }}
+     -n {{ .Values.operator.watchNamespace }}
+     {{- else }}
+     -n default
+     {{- end }}
+
+   kubectl label secret haproxy-config haproxy.operator/config=true \
+     {{- if .Values.operator.watchNamespace }}
+     -n {{ .Values.operator.watchNamespace }}
+     {{- else }}
+     -n default
+     {{- end }}
+
+   # Or apply directly:
+   kubectl apply -f - <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: haproxy-config
+     {{- if .Values.operator.watchNamespace }}
+     namespace: {{ .Values.operator.watchNamespace }}
+     {{- else }}
+     namespace: default
+     {{- end }}
+     labels:
+       haproxy.operator/config: "true"
+   type: Opaque
+   stringData:
+     config.yaml: |
+       apiConfig:
+         url: http://your-haproxy-ip:5555/v2
+         secretRef: haproxy-api-credentials
+         insecure: false
+
+       backends:
+         - name: my-backend
+           mode: http
+           balance:
+             algorithm: roundrobin
+           servers:
+             - name: server-01
+               address: 192.168.1.100
+               port: 443
+               ssl: true
+               check: true
+               verify: none
+
+       frontends:
+         - name: my-frontend
+           mode: http
+           binds:
+             - name: http
+               address: "*"
+               port: 80
+           defaultBackend: my-backend
+   EOF
+{{- else }}
+
+3. Sample configuration has been installed!
+
+   API Credentials Secret: {{ .Values.sampleConfig.secretName }}
+   Configuration Secret: {{ .Values.sampleConfig.name }}
+
+   Check the status:
+
+   kubectl get secret {{ .Values.sampleConfig.name }} -n {{ .Release.Namespace }} -o yaml | grep haproxy.operator
+{{- end }}
+
+CONFIGURATION:
+
+- Replicas: {{ .Values.replicaCount }}
+- Leader Election: {{ .Values.operator.leaderElection }}
+- Watching all Secrets with label: haproxy.operator/config=true
+- Secret Key: {{ .Values.operator.secretKey }}
+
+{{- if .Values.metrics.enabled }}
+
+METRICS:
+
+The operator exposes Prometheus metrics at:
+
+   http://{{ include "haproxy-operator.fullname" . }}-metrics.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.metricsPort }}/metrics
+
+{{- if .Values.serviceMonitor.enabled }}
+ServiceMonitor has been created for Prometheus Operator.
+{{- else }}
+To enable ServiceMonitor, set serviceMonitor.enabled=true
+{{- end }}
+{{- end }}
+
+DOCUMENTATION:
+
+- GitHub: {{ .Chart.Home }}
+- Configuration Reference: See values.yaml for all options
+- Troubleshooting: kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "haproxy-operator.name" . }}
+
+GITOPS INTEGRATION:
+
+This operator works seamlessly with Flux and ArgoCD for GitOps workflows.
+Simply commit your Secrets to Git (encrypted with Sealed Secrets or SOPS), and they will be automatically reconciled!
+
+For more information, visit: {{ .Chart.Home }}

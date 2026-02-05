@@ -1,0 +1,38 @@
+{{- if .Values.sampleConfig.enabled -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.sampleConfig.secretName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "haproxy-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: sample-config
+type: Opaque
+stringData:
+  username: {{ .Values.sampleConfig.apiUsername | quote }}
+  password: {{ .Values.sampleConfig.apiPassword | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.sampleConfig.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "haproxy-operator.labels" . | nindent 4 }}
+    haproxy.operator/config: "true"
+    app.kubernetes.io/component: sample-config
+type: Opaque
+stringData:
+  config.yaml: |
+    apiConfig:
+      url: {{ .Values.sampleConfig.apiUrl | quote }}
+      secretRef: {{ .Values.sampleConfig.secretName }}
+      insecure: false
+
+    backends:
+    {{- toYaml .Values.sampleConfig.backends | nindent 6 }}
+
+    frontends:
+    {{- toYaml .Values.sampleConfig.frontends | nindent 6 }}
+{{- end }}
