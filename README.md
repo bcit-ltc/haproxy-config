@@ -58,6 +58,7 @@ This operator enables GitOps-style management of HAProxy load balancers from wit
 
 - Kubernetes cluster (1.24+)
 - HAProxy with Dataplane API enabled
+  - [Dataplane API Reference](https://www.haproxy.com/documentation/dataplaneapi/community/?v=v3#overview)
 - Network connectivity from cluster to HAProxy API endpoint
 - Go 1.21+ (for building)
 
