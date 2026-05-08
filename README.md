@@ -1,3 +1,9 @@
+# 🧊 This project has been migrated to [bcit-tlu/haproxy-operator](https://github.com/bcit-tlu/haproxy-operator).
+
+The code remains available for historic purposes.
+
+---
+
 # HAProxy Operator for Kubernetes
 
 A Kubernetes operator that watches ConfigMap resources and reconciles HAProxy configuration via the Dataplane API. Built using controller-runtime patterns inspired by FluxCD.
